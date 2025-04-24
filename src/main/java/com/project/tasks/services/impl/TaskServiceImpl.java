@@ -8,6 +8,7 @@ import com.project.tasks.repository.TaskListRepository;
 import com.project.tasks.repository.TaskRepository;
 import com.project.tasks.services.TaskService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +32,7 @@ public class TaskServiceImpl implements TaskService {
         return taskRepository.findByTaskListId(taskListId);
     }
 
+    @Transactional
     @Override
     public Task createTask(UUID taskListId, Task task) {
         if(Objects.nonNull(task.getId())){
@@ -65,5 +67,45 @@ public class TaskServiceImpl implements TaskService {
         );
 
         return taskRepository.save(taskToSave);
+    }
+
+    @Override
+    public Optional<Task> getTask(UUID taskListId, UUID taskId) {
+        return taskRepository.findByTaskListIdAndId(taskListId,taskId);
+    }
+
+    @Transactional
+    @Override
+    public Task updateTask(UUID taskListId, UUID taskId, Task task) {
+        if(task.getId() == null){
+            throw new IllegalArgumentException("Task must have an ID");
+        }
+        if(!Objects.equals(taskId, task.getId())){
+            throw new IllegalArgumentException("Task IDs do not match");
+        }
+        if(task.getPriority() == null){
+            throw new IllegalArgumentException("Task must have a valid priority");
+        }
+
+        if(task.getStatus() == null){
+            throw new IllegalArgumentException("Task must have a valid status");
+        }
+
+        Task existingTask = taskRepository.findByTaskListIdAndId(taskListId,taskId).orElseThrow(() -> new IllegalArgumentException("Task not found!"));
+
+        existingTask.setTitle(task.getTitle());
+        existingTask.setDescription(task.getDescription());
+        existingTask.setDueDate(task.getDueDate());
+        existingTask.setPriority(task.getPriority());
+        existingTask.setStatus(task.getStatus());
+        existingTask.setUpdatedAt(LocalDateTime.now());
+
+        return taskRepository.save(existingTask);
+    }
+
+    @Override
+    @Transactional
+    public void deleteTask(UUID taskListId, UUID taskId) {
+        taskRepository.deleteByTaskListIdAndId(taskListId,taskId);
     }
 }

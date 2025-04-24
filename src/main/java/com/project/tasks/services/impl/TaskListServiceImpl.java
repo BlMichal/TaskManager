@@ -4,6 +4,7 @@ import com.project.tasks.domain.entities.TaskList;
 import com.project.tasks.repository.TaskListRepository;
 import com.project.tasks.services.TaskListService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,6 +54,7 @@ public class TaskListServiceImpl implements TaskListService {
         return taskListRepository.findById(id);
     }
 
+    @Transactional
     @Override
     public TaskList updateTaskList(UUID taskListId, TaskList taskList) {
 
@@ -69,6 +71,7 @@ public class TaskListServiceImpl implements TaskListService {
         return taskListRepository.save(existingTaskList);
     }
 
+    @Transactional
     @Override
     public void deleteTaskList(UUID id) {
 
